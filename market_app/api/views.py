@@ -12,10 +12,12 @@ def markets_view(request):
         markets = Market.objects.all()  # Es werden alle Market-Objekte aus der Datenbank abgerufen
         serializer = MarketSerializer(markets, many=True)  # Der Serializer wird auf die Liste der Market-Objekte angewendet
         return Response(serializer.data)  # Die serialisierten Daten werden als Response zurückgegeben
+    
+    
     if request.method == "POST":
-        try:
-            msg = request.data['message']
-            name = request.data['name']
-            return Response({"message": msg, "name": name}, status=status.HTTP_201_CREATED)
-        except:
-            return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = MarketSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.erros)
