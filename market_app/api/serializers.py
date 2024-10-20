@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from market_app.models import Market
 
-class MarketSerializer(serializers.Model):
-    id = serializers.ImageField(read_only=True)
+class MarketSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=255)
     location = serializers.CharField(max_length=255)
     description = serializers.CharField()
