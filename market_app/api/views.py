@@ -23,7 +23,7 @@ def markets_view(request):
 
 
 
-@api_view(['GET', 'DELETE'])  # Dekorator, der angibt, dass diese View GET und DELETE Anfragen akzeptiert
+@api_view(['GET','PUT', 'DELETE'])  # Dekorator, der angibt, dass diese View GET und DELETE Anfragen akzeptiert
 def single_market_view(request, pk):  # pk = primary Key, ist die ID aus der Datenbank
     try:
         market = Market.objects.get(pk=pk)  # Versucht, das Market-Objekt mit der gegebenen ID zu finden
@@ -34,6 +34,13 @@ def single_market_view(request, pk):  # pk = primary Key, ist die ID aus der Dat
         serializer = MarketSerializer(market)  # Serialisiert das gefundene Market-Objekt
         return Response(serializer.data)  # Gibt die serialisierten Daten als Antwort zurück
     
+    elif request.method == "PUT":  # Prüft, ob die HTTP-Methode PUT ist (für Aktualisierungen)
+        serializer = MarketSerializer(market, data=request.data, partial=True)  # Erstellt einen Serializer mit dem existierenden Objekt und den neuen Daten, erlaubt partielle Updates
+        if serializer.is_valid():  # Überprüft, ob die neuen Daten gültig sind
+            serializer.save()  # Aktualisiert das existierende Market-Objekt mit den neuen Daten
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # Gibt die aktualisierten Daten und einen 201 Status zurück
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Gibt Fehlermeldungen zurück, wenn die Daten ungültig sind
+
     elif request.method == "DELETE":  # Wenn die Anfrage eine DELETE-Anfrage ist
         market.delete()  # Löscht das Market-Objekt aus der Datenbank
         return Response(status=status.HTTP_204_NO_CONTENT)  # Gibt 204 No Content zurück, um erfolgreiche Löschung anzuzeigen
