@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MarketSerializer
-from market_app.models import Market
+from .serializers import MarketSerializer, SellerDetailSerializer, SellerCreateSerializer
+from market_app.models import Market, Seller
 
 from market_app.api import serializers
 
@@ -45,3 +45,18 @@ def single_market_view(request, pk):  # pk = primary Key, ist die ID aus der Dat
         market.delete()  # Löscht das Market-Objekt aus der Datenbank
         return Response(status=status.HTTP_204_NO_CONTENT)  # Gibt 204 No Content zurück, um erfolgreiche Löschung anzuzeigen
     
+
+@api_view(['GET', 'POST'])
+def sellers_view(request):
+    if request.method == "GET":
+        sellers = Seller.objects.all()
+        serializer = SellerDetailSerializer(sellers, many=True)#gibt alle verkäufer zurück
+        return Response(serializer.data)
+    
+          
+    if request.method == "POST":  # Prüft, ob die HTTP-Methode POST ist
+        serializer = SellerCreateSerializer(data=request.data)  # Erstellt einen Serializer mit den Daten aus der Anfrage
+        if serializer.is_valid():  # Überprüft, ob die Daten gültig sind (entsprechend den Regeln im Serializer)
+            serializer.save()  # Speichert die Daten in der Datenbank (erstellt ein neues Market-Objekt)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # Gibt die gespeicherten Daten als Antwort zurück
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Gibt Fehlermeldungen zurück, wenn die Daten ungültig sind
