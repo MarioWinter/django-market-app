@@ -66,13 +66,23 @@ class ProductsSerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=50, decimal_places=2)
     market = MarketSerializer(read_only=True)
     seller = SellerDetailSerializer(read_only=True)
+    
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
+        instance.price = validated_data.get('price', instance.price)
+        instance.market = validated_data.get('market', instance.market)
+        instance.seller = validated_data.get('seller', instance.seller)
+        instance.save()
+        return instance
 
-class ProductCreateSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255)
-    description = serializers.CharField()
-    price = serializers.DecimalField(max_digits=50, decimal_places=2)
-    market = serializers.PrimaryKeyRelatedField(queryset=Market.objects.all(), write_only=True)
-    seller = serializers.PrimaryKeyRelatedField(queryset=Seller.objects.all(), write_only=True)
+class ProductCreateSerializer(serializers.Serializer):  # Definiert einen benutzerdefinierten Serializer für die Erstellung von Produkten
+    name = serializers.CharField(max_length=255)  # Feld für den Produktnamen, begrenzt auf 255 Zeichen
+    description = serializers.CharField()  # Feld für die Produktbeschreibung, ohne Längenbegrenzung
+    price = serializers.DecimalField(max_digits=50, decimal_places=2)  # Feld für den Preis, erlaubt große Zahlen mit Cent-Genauigkeit
+    market = serializers.PrimaryKeyRelatedField(queryset=Market.objects.all(), write_only=True)  # Feld für die Markt-Verknüpfung, nur zum Schreiben, verwendet IDs existierender Märkte
+    
+    seller = serializers.PrimaryKeyRelatedField(queryset=Seller.objects.all(), write_only=True)  # Feld für die Verkäufer-Verknüpfung, nur zum Schreiben, verwendet IDs existierender Verkäufer
     
     # def validate_market(self, value):
     #     markets = Market.objects.filter(id__in=value)
