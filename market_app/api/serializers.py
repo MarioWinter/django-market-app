@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from market_app.models import Market, Seller
+from market_app.models import Market, Seller, Product
 
 def validate_no_x(value):
     errors = []
@@ -57,3 +57,40 @@ class SellerCreateSerializer(serializers.Serializer):
             markets = Market.objects.filter(id__in=market_ids)#filtert aus der Market Datenbank nur die Märkte raus deren Ids Valide und aus der eingabe sind. 
             seller.markets.set(markets)#fügt im Seller das Spalte Markets die gefilterten Markets ein.
             return seller#gibt den Seller zurück
+
+
+class ProductsSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=255)
+    description = serializers.CharField()
+    price = serializers.DecimalField(max_digits=50, decimal_places=2)
+    market = MarketSerializer(read_only=True)
+    seller = SellerDetailSerializer(read_only=True)
+
+class ProductCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    description = serializers.CharField()
+    price = serializers.DecimalField(max_digits=50, decimal_places=2)
+    market = serializers.PrimaryKeyRelatedField(queryset=Market.objects.all(), write_only=True)
+    seller = serializers.PrimaryKeyRelatedField(queryset=Seller.objects.all(), write_only=True)
+    
+    # def validate_market(self, value):
+    #     markets = Market.objects.filter(id__in=value)
+    #     if len(markets) != len(value):#vergelicht die anzahl der märkte
+    #             raise serializers.ValidationError("Markets anzahl: "  + str(markets) + " Anzahl Value: "+ str(value))#Debugging
+    #     return value
+    
+    # def validate_seller(self, value):
+    #     sellers = Seller.objects.filter(id__in=value)
+    #     if len(sellers) != len(value):#vergelicht die anzahl der märkte
+    #             raise serializers.ValidationError("Markets anzahl: "  + str(sellers) + " Anzahl Value: "+ str(value))#Debugging
+    #     return value
+    
+    def create(self, validated_data):
+        return Product.objects.create(**validated_data)
+        # market = validated_data.pop('market')
+        # seller = validated_data.pop('seller')
+        # product = Product.objects.create(market=market, seller=seller, **validated_data)
+        # return product
+    
+    

@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MarketSerializer, SellerDetailSerializer, SellerCreateSerializer
-from market_app.models import Market, Seller
+from .serializers import MarketSerializer, SellerDetailSerializer, SellerCreateSerializer, ProductsSerializer, ProductCreateSerializer
+from market_app.models import Market, Seller, Product
 
 from market_app.api import serializers
 
@@ -60,3 +60,18 @@ def sellers_view(request):
             serializer.save()  # Speichert die Daten in der Datenbank (erstellt ein neues Market-Objekt)
             return Response(serializer.data, status=status.HTTP_201_CREATED)  # Gibt die gespeicherten Daten als Antwort zurück
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Gibt Fehlermeldungen zurück, wenn die Daten ungültig sind
+
+
+@api_view(['GET', 'POST'])
+def product_view(request):
+    if request.method == "GET":
+        products = Product.objects.all()
+        serializer = ProductsSerializer(products, many=True)
+        return Response(serializer.data)
+    
+    if request.method == "POST":
+        serializer = ProductCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
