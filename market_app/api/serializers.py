@@ -16,7 +16,12 @@ def validate_no_x(value):
 class MarketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Market
-        fields = '__all__'
+        exclude  = []
+        
+class MarketHyperlinkedSerializer(MarketSerializer, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Market
+        exclude  = []
     # id = serializers.IntegerField(read_only=True)
     # name = serializers.CharField(max_length=255)
     # location = serializers.CharField(max_length=255, validators=[validate_no_x])
@@ -37,10 +42,13 @@ class MarketSerializer(serializers.ModelSerializer):
 class SellerSerializer(serializers.ModelSerializer):
     markets = MarketSerializer(many=True, read_only=True)
     market = serializers.PrimaryKeyRelatedField(queryset=Market.objects.all(),many=True, write_only=True, source="markets")
+    market_count = serializers.SerializerMethodField()
     class Meta:
         model = Seller
         exclude  = []
-
+        
+    def get_market_count(self, obj):
+        return obj.markets.count()
 
 # class SellerDetailSerializer(serializers.Serializer):
 #         id = serializers.IntegerField(read_only=True)

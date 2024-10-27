@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MarketSerializer, SellerSerializer, ProductsSerializer
+from .serializers import MarketSerializer, SellerSerializer, ProductsSerializer, MarketHyperlinkedSerializer
 from market_app.models import Market, Seller, Product
 
 from market_app.api import serializers
@@ -10,7 +10,7 @@ from market_app.api import serializers
 def markets_view(request):
     if request.method == "GET":
         markets = Market.objects.all()  # Es werden alle Market-Objekte aus der Datenbank abgerufen
-        serializer = MarketSerializer(markets, many=True)  # Der Serializer wird auf die Liste der Market-Objekte angewendet
+        serializer = MarketHyperlinkedSerializer(markets, many=True, context={'request': request})  # Der Serializer wird auf die Liste der Market-Objekte angewendet
         return Response(serializer.data)  # Die serialisierten Daten werden als Response zurückgegeben
     
           
@@ -31,7 +31,7 @@ def single_market_view(request, pk):  # pk = primary Key, ist die ID aus der Dat
         return Response(status=status.HTTP_404_NOT_FOUND)  # Gibt 404 Not Found zurück, wenn das Objekt nicht existiert
         
     if request.method == "GET":  # Wenn die Anfrage eine GET-Anfrage ist
-        serializer = MarketSerializer(market)  # Serialisiert das gefundene Market-Objekt
+        serializer = MarketSerializer(market, context={'request': request})  # Serialisiert das gefundene Market-Objekt
         return Response(serializer.data)  # Gibt die serialisierten Daten als Antwort zurück
     
     elif request.method == "PUT":  # Prüft, ob die HTTP-Methode PUT ist (für Aktualisierungen)
